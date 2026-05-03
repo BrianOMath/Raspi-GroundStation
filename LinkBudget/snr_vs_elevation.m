@@ -22,7 +22,7 @@ run('groundstation_params.m')  %Pull Parameters for groundstation
 el_deg_vec = 2:1:90;   % Elevation angles to evaluate
 
 % Slant range formula: d = -R*sin(el) + sqrt((R+h)^2 - R^2*cos^2(el))
-R_km   = R_earth_km;
+R_km   = R_earth_km; % Earth radius (km)
 h_km   = alt_km;
 el_rad = deg2rad(el_deg_vec);
 d_km   = -R_km .* sin(el_rad) + sqrt((R_km + h_km)^2 - R_km^2 .* cos(el_rad).^2);

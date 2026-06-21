@@ -74,6 +74,7 @@ echo "[$(date)] Found observation ID: $obs_id — uploading artifacts"
             "cat > '/tmp/.satnogs/data/$fname'" < "$img"
     done
 
+    # Remove if observation analysis is not required
     # --- SNR vs elevation analysis (non-blocking: never fails the upload) ---
     echo "[$(date)] Running SNR/elevation analysis"
     /home/brian/analyse_pass.sh "$iq_file" "$output_dir" "$iso_ts" "$obs_json_file" \

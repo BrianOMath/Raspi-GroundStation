@@ -30,10 +30,8 @@ import matplotlib
 matplotlib.use("Agg")
 import matplotlib.pyplot as plt
 
-# CSV_PATH = "/mnt/user-data/uploads/all_passes_snr_elevation.csv"
-CSV_PATH = "C:/Users/brian/OneDrive/Personal Work/GroundStation/LinkBudget/analysis/all_passes_snr_elevation.csv"
-# OUT_DIR = "/mnt/user-data/outputs"
-OUT_DIR = "C:/Users/brian/OneDrive/Personal Work/GroundStation/LinkBudget/analysis/outputs"
+CSV_PATH = "/mnt/user-data/uploads/all_passes_snr_elevation.csv"
+OUT_DIR = "/mnt/user-data/outputs"
 
 # ---------------------------------------------------------------------------
 # Model — mirrors groundstation_params.m + meteor_link_budget.m

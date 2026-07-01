@@ -25,6 +25,7 @@ k_B     = 1.38e-23;       % Boltzmann constant (J/K)
 %  SATELLITE TRANSMITTER  (Meteor M2-3 / M2-4 LRPT)
 % -------------------------------------------------------------------------
 f_MHz     = 137.9;        % Downlink frequency (MHz) — M2-3: 137.1, M2-4: 137.9
+f_Hz   = f_MHz * 1e6;
 P_tx_W    = 5.0;          % Transmit power (W) — estimated from published specs
 G_tx_dBi  = 3.0;          % Tx antenna gain (dBi) — sat QFH/turnstile approx
 L_tx_dB   = 1.0;          % Tx line/misc losses (dB)

@@ -11,7 +11,7 @@
 %  B-Raspi analysis script, so it may contain more values than any single
 %  script uses.
 %
-%  Version : 1.4 — Turnstile antenna, LNA indoors at SDR (~5 m coax before LNA)
+%  Version : 1.5 — Turnstile antenna, LNA mast-mounted ~1 m from feedpoint
 %  System  : B-Raspi V1.0 (SysML model B-Raspi_v1_0.gaphor)
 % =========================================================================
 
@@ -25,7 +25,6 @@ k_B     = 1.38e-23;       % Boltzmann constant (J/K)
 %  SATELLITE TRANSMITTER  (Meteor M2-3 / M2-4 LRPT)
 % -------------------------------------------------------------------------
 f_MHz     = 137.9;        % Downlink frequency (MHz) — M2-3: 137.1, M2-4: 137.9
-f_Hz   = f_MHz * 1e6;
 P_tx_W    = 5.0;          % Transmit power (W) — estimated from published specs
 G_tx_dBi  = 3.0;          % Tx antenna gain (dBi) — sat QFH/turnstile approx
 L_tx_dB   = 1.0;          % Tx line/misc losses (dB)
@@ -48,7 +47,8 @@ L_misc_dB = 1.0;          % Pointing/misc losses (dB)
 
 % -------------------------------------------------------------------------
 %  GROUND STATION RECEIVE CHAIN
-%  Physical config: Turnstile -> ~5 m coax -> LNA (indoors at SDR) -> RTL-SDR V3
+%  Physical config: Turnstile -> ~1 m coax -> LNA (mast-mounted) -> ~4 m coax
+%                   -> RTL-SDR V3
 % -------------------------------------------------------------------------
 % -- AntennaSubsystem: Turnstile --
 G_rx_dBi   = 1.0;         % Turnstile gain (dBi) — NOMINAL estimate, no measured
@@ -56,8 +56,12 @@ G_rx_dBi   = 1.0;         % Turnstile gain (dBi) — NOMINAL estimate, no measur
                           %   uniform hemispherical coverage. To be refined by
                           %   fitting against measured SNR-vs-elevation data.
 
-% -- RFFrontEnd: Coax (sits BEFORE the LNA, since the LNA is indoors at the SDR) --
-L_coax_dB  = 0.5;         % Coax loss (dB) — ~5 m run at 137 MHz
+% -- RFFrontEnd: Coax, split at the LNA --
+%    The run BEFORE the LNA enters the Friis cascade directly (its loss adds
+%    to noise figure one-for-one); the run AFTER the LNA is suppressed by the
+%    LNA's gain and contributes almost nothing to system NF.
+L_coax_pre_dB  = 0.1;     % Antenna -> LNA, ~1 m at 137 MHz
+L_coax_post_dB = 0.4;     % LNA -> SDR, ~4 m at 137 MHz
 
 % -- RFFrontEnd: LNA (SPF5189Z / RTL-SDR Blog wideband) --
 G_lna_dB   = 20.0;        % LNA gain (dB)

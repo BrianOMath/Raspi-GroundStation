@@ -54,14 +54,17 @@ L_ATM, L_RAIN, L_POL, L_MISC = 0.5, 0.1, 1.0, 1.0
 L_TOTAL_DB = L_ATM + L_RAIN + L_POL + L_MISC
 
 G_RX_DBI = 1.0          # nominal turnstile gain (the thing we'll effectively fit)
-L_COAX_DB = 0.5
+# Mast-mounted LNA: ~1 m coax before it (in cascade), ~4 m after (suppressed)
+L_COAX_PRE_DB = 0.1
+L_COAX_POST_DB = 0.4
 G_LNA_DB, NF_LNA_DB, NF_SDR_DB = 20.0, 1.0, 6.5
 
 NF_lna = 10 ** (NF_LNA_DB / 10)
 NF_sdr = 10 ** (NF_SDR_DB / 10)
 G_lna = 10 ** (G_LNA_DB / 10)
-L_coax = 10 ** (L_COAX_DB / 10)
-NF_CASCADE = L_coax + (NF_lna - 1) * L_coax + (NF_sdr - 1) * L_coax / G_lna
+L_pre = 10 ** (L_COAX_PRE_DB / 10)
+L_post = 10 ** (L_COAX_POST_DB / 10)
+NF_CASCADE = L_pre + (NF_lna - 1) * L_pre + (NF_sdr - 1) * L_pre * L_post / G_lna
 
 T_SKY, T_STD = 150, 290
 T_SYS = T_SKY + T_STD * (NF_CASCADE - 1)
@@ -80,7 +83,7 @@ def model_CN_dB(el_deg, g_rx_dbi=G_RX_DBI):
     """Model C/N (carrier-to-noise in receiver bandwidth) vs elevation."""
     d_m = slant_range_m(el_deg)
     fspl = 20 * np.log10(d_m) + 20 * np.log10(F_HZ) + 20 * np.log10(4 * np.pi / C)
-    pr = EIRP_DBW - fspl - L_TOTAL_DB + g_rx_dbi - L_COAX_DB
+    pr = EIRP_DBW - fspl - L_TOTAL_DB + g_rx_dbi - L_COAX_PRE_DB
     cn0 = pr - K_B_DB - T_SYS_DBK
     return cn0 - 10 * np.log10(BW_HZ)
 

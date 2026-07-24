@@ -4,6 +4,8 @@ A self-built, automated satellite ground station in Dublin, Ireland, receiving a
 
 The station runs on the [SatNOGS network](https://network.satnogs.org/stations/4621/) (station **4621, "B-Raspi"**), and every pass feeds an automated pipeline: RF capture → demodulation → image decode → SNR analysis → orbital correlation → upload → local dashboard. The theoretical link budget has been validated against **21,000+ measured data points across 35 real satellite passes**.
 
+Full technical report: design, methods, and measured-vs-modelled validation → (SystemsEngineering/technical_report.md)
+
 ---
 [System architecture - BDD](docs/groundstation_v1.2_bdd.png)
 
@@ -57,6 +59,7 @@ The station runs on the [SatNOGS network](https://network.satnogs.org/stations/4
 | **Observation Analysis/** | The automated pipeline and instrumentation. IQ-based SNR estimator (`iq_snr_trace.py`), TLE/elevation correlator (`correlate_snr_elevation.py`), per-pass orchestration (`analyse_pass.sh`), decode/upload automation (`process_meteor.sh`), local Flask dashboard (`dashboard.py`), and storage cleanup (`satdump_cleanup.sh`). |
 | **OrbitalModelling/** | Orbital mechanics models — Doppler shift prediction and pass geometry. |
 | **SysML/** | System architecture model (Gaphor) — block definition and internal block diagrams of the station. |
+| **SystemsEngineering** | Requirements specification, verification matrix, and technical report. Requirements-driven development and V&V evidence, structured along ECSS-E-ST-10 / NASA SE Handbook lines. |
 
 ## Measured vs modelled
 

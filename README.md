@@ -4,7 +4,7 @@ A self-built, automated satellite ground station in Dublin, Ireland, receiving a
 
 The station runs on the [SatNOGS network](https://network.satnogs.org/stations/4621/) (station **4621, "B-Raspi"**), and every pass feeds an automated pipeline: RF capture → demodulation → image decode → SNR analysis → orbital correlation → upload → local dashboard. The theoretical link budget has been validated against **21,000+ measured data points across 35 real satellite passes**.
 
-[Full technical report: design, methods, and measured-vs-modelled validation]
+Full technical report: design, methods, and measured-vs-modelled validation
 - [Requirements specification](SystemsEngineering/requirements.md)
 - [Verification matrix](SystemsEngineering/verification_matrix.md)
 - [Technical report](SystemsEngineering/technical_report.md)

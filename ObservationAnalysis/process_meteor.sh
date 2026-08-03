@@ -13,7 +13,8 @@ mkdir -p "$OUTPUT_BASE"
 
 process_file() {
     local iq_file="$1"
-    local basename=$(basename "$iq_file" .raw)
+    local basename
+    basename=$(basename "$iq_file" .raw)
     local output_dir="$OUTPUT_BASE/$basename"
 
     echo "[$(date)] Processing: $iq_file"
@@ -24,7 +25,8 @@ process_file() {
         --samplerate 160000 --baseband_format cs16
 
     # Find decoded PNG images
-    local images=$(find "$output_dir" -name "*.png" 2>/dev/null)
+    local images
+    images=$(find "$output_dir" -name "*.png" 2>/dev/null)
     if [ -z "$images" ]; then
         echo "[$(date)] No images produced — signal may have been too weak"
         echo "$iq_file" >> "$PROCESSED_LOG"
@@ -35,25 +37,28 @@ process_file() {
 
     # Convert filename timestamp to ISO format for API query
     # Filename format: iq_cs16_2026-06-08T14-37-44.raw
-    local raw_ts=$(echo "$basename" | sed 's/iq_cs16_//')
-    local iso_ts=$(echo "$raw_ts" | sed 's/T\([0-9][0-9]\)-\([0-9][0-9]\)-\([0-9][0-9]\)/T\1:\2:\3/')
-    local start_ts=$(date -u -d "$iso_ts UTC - 10 minutes" +"%Y-%m-%dT%H:%M:%S" 2>/dev/null)
-    local end_ts=$(date -u -d "$iso_ts UTC + 15 minutes" +"%Y-%m-%dT%H:%M:%S" 2>/dev/null)
+    local raw_ts iso_ts start_ts end_ts
+    raw_ts=$(echo "$basename" | sed 's/iq_cs16_//')
+    iso_ts=$(echo "$raw_ts" | sed 's/T\([0-9][0-9]\)-\([0-9][0-9]\)-\([0-9][0-9]\)/T\1:\2:\3/')
+    start_ts=$(date -u -d "$iso_ts UTC - 10 minutes" +"%Y-%m-%dT%H:%M:%S" 2>/dev/null)
+    end_ts=$(date -u -d "$iso_ts UTC + 15 minutes" +"%Y-%m-%dT%H:%M:%S" 2>/dev/null)
 
     echo "[$(date)] Looking up observation ID for timestamp: $iso_ts"
 
     # Query SatNOGS API for matching observation
-    local obs_json=$(curl -s \
+    local obs_json
+    obs_json=$(curl -s \
         "https://network.satnogs.org/api/observations/?ground_station=${STATION_ID}&start=${start_ts}&end=${end_ts}" \
         -H "Authorization: Token ${API_TOKEN}")
     local obs_json_file="${output_dir}/.obs_response.json"
     echo "$obs_json" > "$obs_json_file"
-    local obs_id=$(echo "$obs_json" | python3 -c "
-import sys, json
-data = json.load(sys.stdin)
-if data and len(data) > 0:
-    print(data[0]['id'])
-" 2>/dev/null)
+    local obs_id
+    obs_id=$(echo "$obs_json" | python3 -c "
+    import sys, json
+    data = json.load(sys.stdin)
+    if data and len(data) > 0:
+        print(data[0]['id'])
+    " 2>/dev/null)
 
     if [ -z "$obs_id" ]; then
         echo "[$(date)] Could not find observation ID — images saved locally only"

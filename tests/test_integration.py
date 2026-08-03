@@ -20,7 +20,8 @@ from pathlib import Path
 import numpy as np
 import pytest
 
-REPO = Path(__file__).resolve().parent.parent
+#REPO = Path(__file__).resolve().parent.parent
+REPO = Path(__file__).resolve().parent.parent / "ObservationAnalysis"
 
 
 def run(script, *args):

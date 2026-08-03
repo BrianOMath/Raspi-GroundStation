@@ -1,0 +1,18 @@
+# secrets
+*.env
+.satnogs_token
+*token*
+
+# runtime data — not source
+satdump_output/
+analysis/
+*.raw
+*.cadu
+all_passes*.csv
+.obs_api_cache.json
+.processed_iq_files
+
+# python
+__pycache__/
+*.pyc
+.pytest_cache/

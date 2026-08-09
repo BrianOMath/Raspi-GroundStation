@@ -1,0 +1,55 @@
+B-Raspi sky map analysis
+================================================================
+Samples: 93,413   Passes: 140
+Excluded below 5.0 dB (recording dropouts): 4
+Estimator bias corrected via S/N = 10^(reported/10) - 1
+Residual anchored to median above 60 deg (-5.57 dB removed)
+
+Median residual by sector and elevation band (dB):
+  sector             5-15    15-25    25-40    40-60      >60
+  N  (337-023)      -3.65    -5.31    -4.19    -0.04     0.23
+  NE (023-068)      -2.84    -2.87    -2.71    -0.19     1.46
+  E  (068-113)      -3.22    -1.49    -0.35     0.65    -0.41
+  SE (113-158)      -3.97    -3.92    -0.17     1.38    -1.17
+  S  (158-203)      -3.66    -3.52    -0.26     0.90     0.42
+  SW (203-248)      -3.90    -5.07    -2.48    -1.34    -0.05
+  W  (248-293)      -3.95    -5.81    -5.45    -2.61    -1.69
+  NW (293-337)      -4.28    -5.99    -5.66    -2.40    -0.11
+
+Derived recovery elevation by azimuth (elevation at which residual
+first exceeds -3 dB; higher implies greater obstruction):
+      8 deg : 30 deg
+     22 deg : 5 deg
+     38 deg : 30 deg
+     52 deg : 5 deg
+     68 deg : 5 deg
+     82 deg : 10 deg
+     98 deg : 10 deg
+    112 deg : 20 deg
+    128 deg : 20 deg
+    142 deg : 20 deg
+    158 deg : 20 deg
+    172 deg : 25 deg
+    188 deg : 15 deg
+    202 deg : 35 deg
+    218 deg : 30 deg
+    232 deg : 25 deg
+    248 deg : 30 deg
+    262 deg : 40 deg
+    278 deg : 50 deg
+    292 deg : 35 deg
+    308 deg : 45 deg
+    322 deg : 45 deg
+    338 deg : 35 deg
+    352 deg : 40 deg
+
+Decode failures: 40 passes
+  max-elevation azimuth distribution:
+    N  (337-023)   0
+    NE (023-068)   7
+    E  (068-113)   4
+    SE (113-158)   0
+    S  (158-203)   0
+    SW (203-248)   0
+    W  (248-293)   10
+    NW (293-337)   19

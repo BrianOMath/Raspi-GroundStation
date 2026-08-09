@@ -4,7 +4,7 @@
 IQ_DIR="/var/lib/docker-bindmounts/satnogs_satnogs-client/opt/satnogs-non-free"
 OUTPUT_BASE="/home/brian/satdump_output"
 STATION_ID=4621
-API_TOKEN="Satnogs_Token_Here"
+API_TOKEN="b2b7e370e35fe0aa88c93000cb55235a879c7f49"
 PROCESSED_LOG="/home/brian/.processed_iq_files"
 MIN_SIZE_BYTES=104857600  # 100 MB minimum — rejects incomplete recordings
 
@@ -14,7 +14,7 @@ mkdir -p "$OUTPUT_BASE"
 process_file() {
     local iq_file="$1"
     local basename
-    basename=$(basename "$iq_file" .raw)
+        basename=$(basename "$iq_file" .raw)
     local output_dir="$OUTPUT_BASE/$basename"
 
     echo "[$(date)] Processing: $iq_file"
@@ -24,41 +24,49 @@ process_file() {
     satdump legacy meteor_m2-x_lrpt baseband "$iq_file" "$output_dir" \
         --samplerate 160000 --baseband_format cs16
 
-    # Find decoded PNG images
+    # Note whether images were produced, but DON'T return early — we still want
+    # to run SNR/elevation analysis on weak passes that failed to decode.
     local images
-    images=$(find "$output_dir" -name "*.png" 2>/dev/null)
+        images=$(find "$output_dir" -name "*.png" 2>/dev/null)
     if [ -z "$images" ]; then
-        echo "[$(date)] No images produced — signal may have been too weak"
-        echo "$iq_file" >> "$PROCESSED_LOG"
-        return 1
+        echo "[$(date)] No images produced — signal may have been too weak (analysis will still run)"
+    else
+        echo "[$(date)] Images produced: $images"
     fi
 
-    echo "[$(date)] Images produced: $images"
-
+    # --- Observation lookup (needed for BOTH analysis and upload) ---
     # Convert filename timestamp to ISO format for API query
     # Filename format: iq_cs16_2026-06-08T14-37-44.raw
     local raw_ts iso_ts start_ts end_ts
-    raw_ts=$(echo "$basename" | sed 's/iq_cs16_//')
-    iso_ts=$(echo "$raw_ts" | sed 's/T\([0-9][0-9]\)-\([0-9][0-9]\)-\([0-9][0-9]\)/T\1:\2:\3/')
-    start_ts=$(date -u -d "$iso_ts UTC - 10 minutes" +"%Y-%m-%dT%H:%M:%S" 2>/dev/null)
-    end_ts=$(date -u -d "$iso_ts UTC + 15 minutes" +"%Y-%m-%dT%H:%M:%S" 2>/dev/null)
+        raw_ts=$(echo "$basename" | sed 's/iq_cs16_//')
+        iso_ts=$(echo "$raw_ts" | sed 's/T\([0-9][0-9]\)-\([0-9][0-9]\)-\([0-9][0-9]\)/T\1:\2:\3/')
+        start_ts=$(date -u -d "$iso_ts UTC - 10 minutes" +"%Y-%m-%dT%H:%M:%S" 2>/dev/null)
+        end_ts=$(date -u -d "$iso_ts UTC + 15 minutes" +"%Y-%m-%dT%H:%M:%S" 2>/dev/null)
 
     echo "[$(date)] Looking up observation ID for timestamp: $iso_ts"
 
     # Query SatNOGS API for matching observation
     local obs_json
-    obs_json=$(curl -s \
-        "https://network.satnogs.org/api/observations/?ground_station=${STATION_ID}&start=${start_ts}&end=${end_ts}" \
-        -H "Authorization: Token ${API_TOKEN}")
+        obs_json=$(curl -s \
+                "https://network.satnogs.org/api/observations/?ground_station=${STATION_ID}&start=${start_ts}&end=${end_ts}" \
+                -H "Authorization: Token ${API_TOKEN}")
     local obs_json_file="${output_dir}/.obs_response.json"
     echo "$obs_json" > "$obs_json_file"
     local obs_id
-    obs_id=$(echo "$obs_json" | python3 -c "
-    import sys, json
-    data = json.load(sys.stdin)
-    if data and len(data) > 0:
-        print(data[0]['id'])
-    " 2>/dev/null)
+    obs_id=$(echo "$obs_json" | python3 -c 'import sys,json; d=json.load(sys.stdin); o=(d[0] if isinstance(d,list) and d else d); print(o.get("id","") if isinstance(o,dict) else "")')
+
+    # --- SNR vs elevation analysis (runs for ALL passes, decoded or not) ---
+    # Non-blocking: a failure here never affects image upload.
+    echo "[$(date)] Running SNR/elevation analysis"
+    /home/brian/analyse_pass.sh "$iq_file" "$output_dir" "$iso_ts" "$obs_json_file" \
+        || echo "[$(date)] Analysis step failed (non-fatal)"
+
+    # --- Image upload (only if we actually have images AND an observation ID) ---
+    if [ -z "$images" ]; then
+        echo "[$(date)] No images to upload — analysis complete, done"
+        echo "$iq_file" >> "$PROCESSED_LOG"
+        return 0
+    fi
 
     if [ -z "$obs_id" ]; then
         echo "[$(date)] Could not find observation ID — images saved locally only"
@@ -66,8 +74,7 @@ process_file() {
         return 1
     fi
 
-
-echo "[$(date)] Found observation ID: $obs_id — uploading artifacts"
+    echo "[$(date)] Found observation ID: $obs_id — uploading artifacts"
     # Rotate + upload every PNG; null-delimited so spaces/parens are safe
     find "$output_dir" -name "*.png" -print0 | while IFS= read -r -d '' img; do
         echo "[$(date)] Rotating 180°: $img"
@@ -78,13 +85,6 @@ echo "[$(date)] Found observation ID: $obs_id — uploading artifacts"
         docker exec -i satnogs_satnogs-client sh -c \
             "cat > '/tmp/.satnogs/data/$fname'" < "$img"
     done
-
-    # Remove if observation analysis is not required
-    # --- SNR vs elevation analysis (non-blocking: never fails the upload) ---
-    echo "[$(date)] Running SNR/elevation analysis"
-    /home/brian/analyse_pass.sh "$iq_file" "$output_dir" "$iso_ts" "$obs_json_file" \
-        || echo "[$(date)] Analysis step failed (non-fatal) — imagery already uploaded"
-
 
     echo "[$(date)] Done processing $iq_file"
     echo "$iq_file" >> "$PROCESSED_LOG"
